@@ -10,7 +10,7 @@ namespace ClinkedInSql.Data
 {
     public class UsersRepository
     {
-     
+ 
         // How to create a SQL connection //
         public List<Users> GetAll()
         {
