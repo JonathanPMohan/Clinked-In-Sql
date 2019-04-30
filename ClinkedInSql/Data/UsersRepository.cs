@@ -10,8 +10,56 @@ namespace ClinkedInSql.Data
 {
     public class UsersRepository
     {
- 
+
+        // Setting Connection string //
+        const string ConnectionString = "Server = localhost; Database = ClinkedIn; Trusted_Connection = True;";
+        // Add user //
+        public Users AddUser(string name, DateTime releaseDate, int age, bool isPrisoner)
+        {
+            // setting the Variable to using the SQL connection //
+            using (var connection = new SqlConnection(ConnectionString))
+            {   
+                // Opening the connection //
+                connection.Open();
+                // Setting the Insert User Command To a Variable to create command //
+                var insertUserCommand = connection.CreateCommand();
+                // Setting User Command Command Text //
+                insertUserCommand.CommandText = $@"Insert into users 
+                                                    (name, releaseDate, age, isPrisoner)
+                                                    Output inserted.*
+                                                    Values
+                                                (@name, @releaseDate, @age, @isPrisoner)";
+                // user command parameters adding Value of "example" //
+                insertUserCommand.Parameters.AddWithValue("name", name);
+                insertUserCommand.Parameters.AddWithValue("releasedate", releaseDate);
+                insertUserCommand.Parameters.AddWithValue("age", age);
+                insertUserCommand.Parameters.AddWithValue("isPrisoner", isPrisoner);
+
+                // Setting reader to a variable, execute reader //
+                var reader = insertUserCommand.ExecuteReader();
+                // If statement for inserted paramaters //
+                if (reader.Read())
+                {
+                    var insertedName = reader["name"].ToString();
+                    var insertedReleaseDate = (DateTime)reader["releaseDate"];
+                    var insertedAge = (int)reader["age"];
+                    var insertedIsPrisoner = (bool)reader["isPrisoner"];
+
+                    // Variable for Inserted ID for Added new user //
+                    var insertedId = (int)reader["Id"];
+                    // NewUser variable for inserted parameters for add //
+                    var newUser = new Users(insertedName, insertedReleaseDate, insertedIsPrisoner, insertedAge) { Id = insertedId };
+                    // Returning the new user just added //
+                    return newUser;
+                }
+            }
+            // Exception for when no user is found //
+            throw new Exception("No user found");
+        }
+
+
         // How to create a SQL connection //
+        // Get all users //
         public List<Users> GetAll()
         {
             // setting users to a new list //
@@ -47,6 +95,64 @@ namespace ClinkedInSql.Data
             connection.Close();
 
             return users;
+
         }
+
+        
+        // Update User //
+        public bool UpdateUser(int id, string name, DateTime releaseDate, int age, bool isPrisoner)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                var updateUserCommand = connection.CreateCommand();
+
+                updateUserCommand.Parameters.AddWithValue("@Id", id);
+
+                updateUserCommand.CommandText = $@"Update users 
+                                                    Set 
+                                                        name = @name,
+                                                        releaseDate = @releaseDate,
+                                                        age = @age,
+                                                        isPrisoner = @isPrisoner
+                                                Where Id = @Id";
+
+                updateUserCommand.Parameters.AddWithValue("name", name);
+                updateUserCommand.Parameters.AddWithValue("releasedate", releaseDate);
+                updateUserCommand.Parameters.AddWithValue("age", age);
+                updateUserCommand.Parameters.AddWithValue("isPrisoner", isPrisoner);
+
+                var numberOfRowsUpdated = updateUserCommand.ExecuteNonQuery();
+
+                connection.Close();
+
+                if (numberOfRowsUpdated > 0)
+                { return true; }
+                return false;
+
+            }
+
+        }
+
+        // Delete User //
+
+        public void DeleteUser(int userId)
+        {
+            var connection = new SqlConnection(ConnectionString);
+            connection.Open();
+
+            var deleteUserCommand = connection.CreateCommand();
+            deleteUserCommand.Parameters.AddWithValue("UId", userId);
+            deleteUserCommand.CommandText = @"Delete
+                                                From Users
+                                                Where Id = @UId";
+
+            deleteUserCommand.ExecuteNonQuery();
+
+            connection.Close();
+        }
+
+
+
     }
 }
