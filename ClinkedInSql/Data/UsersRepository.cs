@@ -10,6 +10,7 @@ namespace ClinkedInSql.Data
 {
     public class UsersRepository
     {
+
         // Setting Connection string //
         const string ConnectionString = "Server = localhost; Database = ClinkedIn; Trusted_Connection = True;";
         // Add user //
@@ -55,6 +56,7 @@ namespace ClinkedInSql.Data
             // Exception for when no user is found //
             throw new Exception("No user found");
         }
+
 
         // How to create a SQL connection //
         // Get all users //
